@@ -1,14 +1,14 @@
 [Unit]
-Description=pinto uploader container
+Description=opan uploader container
 Author=Avast Viruslab Systems
-After=docker.service pinto.service
+After=docker.service opan.service
 
 [Service]
 TimeoutStartSec=0
-ExecStartPre=-/usr/bin/docker kill pinto_uploader
-ExecStartPre=-/usr/bin/docker rm pinto_uploader
-ExecStartPre=/usr/bin/docker pull avastsoftware/pinto_uploader
-ExecStart=/usr/bin/docker run --name pinto_uploader -v /var/lib/pinto:/var/lib/pinto -p 3000:8080 --env MOJO_INACTIVITY_TIMEOUT=300 --env MOJO_MAX_MESSAGE_SIZE=67108864 avastsoftware/pinto_uploader
+ExecStartPre=-/usr/bin/docker kill opan_uploader
+ExecStartPre=-/usr/bin/docker rm opan_uploader
+ExecStartPre=/usr/bin/docker pull avastsoftware/opan_uploader
+ExecStart=/usr/bin/docker run --name opan_uploader -v /var/lib/opan:/var/lib/opan -p 3001:8081 --env MOJO_INACTIVITY_TIMEOUT=300 --env MOJO_MAX_MESSAGE_SIZE=67108864 avastsoftware/opan_uploader
 
 [Install]
 WantedBy=multi-user.target
