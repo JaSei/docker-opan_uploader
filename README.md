@@ -47,6 +47,12 @@ repository (e.g. a company-wide internal repository).
 
 *opan uploader* do [opan add](https://metacpan.org/pod/distribution/App-opan/script/opan#add) and [opan pull](https://metacpan.org/pod/distribution/App-opan/script/opan#pull)
 
+## MIGRATE FROM PINTO
+this example migrate all pinto packages of user USER to opan
+```
+docker run -v /var/lib/pinto:/var/lib/pinto -v /var/lib/opan:/opan avastsoftware/opan find /var/lib/pinto/stacks/master/authors/id/U/US/USER -type f -name *.tar.gz -exec opan add {} \;
+```
+
 ## CAVEATS AND LIMITATIONS
 There is no authorization / authentication implemented: everyone who can access
 the server is able to push a distribution into the repository. A possible
