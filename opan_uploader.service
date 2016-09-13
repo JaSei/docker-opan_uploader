@@ -1,0 +1,14 @@
+[Unit]
+Description=pinto uploader container
+Author=Avast Viruslab Systems
+After=docker.service pinto.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill pinto_uploader
+ExecStartPre=-/usr/bin/docker rm pinto_uploader
+ExecStartPre=/usr/bin/docker pull avastsoftware/pinto_uploader
+ExecStart=/usr/bin/docker run --name pinto_uploader -v /var/lib/pinto:/var/lib/pinto -p 3000:8080 --env MOJO_INACTIVITY_TIMEOUT=300 --env MOJO_MAX_MESSAGE_SIZE=67108864 avastsoftware/pinto_uploader
+
+[Install]
+WantedBy=multi-user.target

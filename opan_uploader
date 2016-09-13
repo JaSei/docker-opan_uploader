@@ -1,0 +1,80 @@
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+
+use Capture::Tiny qw(capture);
+use Path::Tiny;
+
+app->config(
+    hypnotoad => {
+        listen             => ['http://*:8081'],
+        graceful_timeout   => 300,
+        inactivity_timeout => 240,
+        heartbeat_timeout  => 240,
+    }
+);
+
+helper 'save_post_to_temp_file' => sub {
+    my ($controller, $tmp_dir, $dist) = @_;
+
+    my $uploaded_dist;
+    if (my $upload = $controller->req->upload('dist')) {
+        $uploaded_dist = $upload->asset();
+        $dist          = $upload->filename();
+    }
+    else {
+        $uploaded_dist = $controller->req->content->asset();
+    }
+
+    my $tmp_dist;
+    if (!$dist) {
+        $tmp_dist = Path::Tiny->tempfile(DIR => $tmp_dir, SUFFIX => '.tar.gz');
+    }
+    else {
+        $tmp_dist = path($tmp_dir, $dist);
+    }
+
+    $uploaded_dist->move_to($tmp_dist);
+
+    return $tmp_dist;
+};
+
+post '/add' => sub {
+    my ($controller) = @_;
+
+    my $dist   = $controller->param('dist');
+
+    my $tmp_dir = Path::Tiny->tempdir();
+    my $tmp_dist = $controller->save_post_to_temp_file($tmp_dir, $dist);
+
+    my $cmd = "opan add $tmp_dist";
+
+    my $opan_ret_code;
+    my ($stdout, $stderr) = capture {
+        $opan_ret_code = system $cmd;
+    };
+
+    my %render;
+    if ($opan_ret_code) {
+        return $controller->render(
+            text   => "$cmd failed\n$stderr\n",
+            status => 500,
+        );
+    }
+
+    system "opan pull";
+
+    my $text = "Package added\n"; 
+    if ($stdout || $stderr) {
+        $text .= sprintf 
+            "warning(s):\n%s\n%s\n",
+            $stdout || '',
+            $stderr || '';
+    }
+
+    return $controller->render(
+        text   => $text,
+        status => 200,
+    );
+};
+
+app->start;
